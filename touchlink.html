@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>碰一碰链接生成器</title>
+    <style>
+        :root {
+            --primary-color: #409EFF;
+            --success-color: #67C23A;
+            --background: #f5f7fa;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            background: var(--background);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #606266;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .secret-input {
+            width: 100%;
+            height: 40px;
+            padding: 8px 15px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .secret-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .data-textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            resize: vertical;
+            font-size: 14px;
+        }
+
+        .generate-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .generate-btn:hover {
+            background: #66b1ff;
+        }
+
+        .result-box {
+            margin-top: 25px;
+        }
+
+        .result-textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 1px solid #e4e7ed;
+            border-radius: 4px;
+            background: #f5f7fa;
+            font-size: 14px;
+            color: #606266;
+            resize: none;
+        }
+
+        .input-hint {
+            color: #909399;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-group">
+            <label class="form-label">安全秘钥</label>
+            <input 
+                type="text" 
+                class="secret-input" 
+                id="secret" 
+                placeholder="请输入您的安全秘钥"
+            >
+            <div class="input-hint">安全秘钥</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">设备数据</label>
+            <textarea 
+                class="data-textarea" 
+                id="data" 
+                placeholder="门店编号与设备编号用&连接，多对数据请换行输入
+门店1&设备1 
+门店2&设备2"
+            ></textarea>
+            <div class="input-hint"></div>
+        </div>
+
+        <button class="generate-btn" onclick="getAllUrl()">立即生成碰一碰链接</button>
+
+        <div class="form-group result-box">
+            <label class="form-label">生成结果</label>
+            <textarea 
+                class="result-textarea" 
+                id="allurl" 
+                disabled
+                placeholder="生成的链接将显示在这里"
+            ></textarea>
+        </div>
+    </div>
+
+    <script>
+    function getAllUrl() {
+        const data = document.getElementById("data").value;
+        const secret = document.getElementById("secret").value;
+		
+		if (secret.length == 0 || data.length == 0){
+			alert("秘钥或设备数据不能为空")
+			return;
+		}
+		
+		if (secret.length != 19){
+			alert("秘钥格式不正确")
+			return;
+		}
+
+        let result = "";
+        data.split('\n')
+            .map(p => p.split('&'))
+            .filter(([a]) => a)
+            .forEach(([a, b]) => {
+                const url = buildMiniAppRedirectUrl(a.trim(), b?.trim(), secret);
+                if(url) result += url + '\n';
+            });
+
+        document.getElementById('allurl').value = result;
+    }
+
+    const miniAppRedirectParams = 'depotCode=${depotCode}&deviceCode=${deviceCode}&sign=${sign}';
+    const miniAppRedirectUrl = 'alipays://platformapi/startapp?appId=2021002175698278&page=pages/innerCabQuery/index?';
+
+    function buildMiniAppRedirectUrl(depotCode, deviceCode, secret) {
+        try {
+            const rawString = depotCode + deviceCode + secret;
+            const sign = CryptoJS.MD5(rawString).toString();
+            
+            const paramsStr = miniAppRedirectParams
+                .replace(/\${depotCode}/g, depotCode)
+                .replace(/\${deviceCode}/g, deviceCode)
+                .replace(/\${sign}/g, sign);
+
+            return miniAppRedirectUrl + javaURLEncode(paramsStr);
+        } catch (e) {
+            console.error('生成失败:', e);
+            return null;
+        }
+    }
+
+    function javaURLEncode(str) {
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(str);
+        let result = '';
+        
+        for (const byte of bytes) {
+            if (
+                (byte >= 0x41 && byte <= 0x5A) || 
+                (byte >= 0x61 && byte <= 0x7A) || 
+                (byte >= 0x30 && byte <= 0x39) || 
+                byte === 0x2D || 
+                byte === 0x5F || 
+                byte === 0x2E || 
+                byte === 0x2A
+            ) {
+                result += String.fromCharCode(byte);
+            } else if (byte === 0x20) {
+                result += '+';
+            } else {
+                result += '%' + byte.toString(16).toUpperCase().padStart(2, '0');
+            }
+        }
+        return result;
+    }
+    </script>
+</body>
+</html>
