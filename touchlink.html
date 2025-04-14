@@ -2,6 +2,7 @@
 <html>
 <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://zone7th.github.io/SimplePages/touchlinks.js"></script>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>碰一碰链接生成器</title>
     <style>
@@ -130,7 +131,7 @@
             <div class="input-hint"></div>
         </div>
 
-        <button class="generate-btn" onclick="getAllUrl()">立即生成碰一碰链接</button>
+        <button class="generate-btn">立即生成碰一碰链接</button>
 
         <div class="form-group result-box">
             <label class="form-label">生成结果</label>
@@ -142,78 +143,5 @@
             ></textarea>
         </div>
     </div>
-
-    <script>
-    function getAllUrl() {
-        const data = document.getElementById("data").value;
-        const secret = document.getElementById("secret").value;
-		
-		if (secret.length == 0 || data.length == 0){
-			alert("秘钥或设备数据不能为空")
-			return;
-		}
-		
-		if (secret.length != 19){
-			alert("秘钥格式不正确")
-			return;
-		}
-
-        let result = "";
-        data.split('\n')
-            .map(p => p.split('&'))
-            .filter(([a]) => a)
-            .forEach(([a, b]) => {
-                const url = buildMiniAppRedirectUrl(a.trim(), b?.trim(), secret);
-                if(url) result += url + '\n';
-            });
-
-        document.getElementById('allurl').value = result;
-    }
-
-    const miniAppRedirectParams = 'depotCode=${depotCode}&deviceCode=${deviceCode}&sign=${sign}';
-    const miniAppRedirectUrl = 'alipays://platformapi/startapp?appId=2021002175698278&page=pages/innerCabQuery/index?';
-
-    function buildMiniAppRedirectUrl(depotCode, deviceCode, secret) {
-        try {
-            const rawString = depotCode + deviceCode + secret;
-            const sign = CryptoJS.MD5(rawString).toString();
-            
-            const paramsStr = miniAppRedirectParams
-                .replace(/\${depotCode}/g, depotCode)
-                .replace(/\${deviceCode}/g, deviceCode)
-                .replace(/\${sign}/g, sign);
-
-            return miniAppRedirectUrl + javaURLEncode(paramsStr);
-        } catch (e) {
-            console.error('生成失败:', e);
-            return null;
-        }
-    }
-
-    function javaURLEncode(str) {
-        const encoder = new TextEncoder();
-        const bytes = encoder.encode(str);
-        let result = '';
-        
-        for (const byte of bytes) {
-            if (
-                (byte >= 0x41 && byte <= 0x5A) || 
-                (byte >= 0x61 && byte <= 0x7A) || 
-                (byte >= 0x30 && byte <= 0x39) || 
-                byte === 0x2D || 
-                byte === 0x5F || 
-                byte === 0x2E || 
-                byte === 0x2A
-            ) {
-                result += String.fromCharCode(byte);
-            } else if (byte === 0x20) {
-                result += '+';
-            } else {
-                result += '%' + byte.toString(16).toUpperCase().padStart(2, '0');
-            }
-        }
-        return result;
-    }
-    </script>
 </body>
 </html>
