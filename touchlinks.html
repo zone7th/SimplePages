@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://zone7th.github.io/SimplePages/touchlinks.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>碰一碰链接生成器</title>
+    <style>
+        :root {
+            --primary-color: #409EFF;
+            --success-color: #67C23A;
+            --background: #f5f7fa;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            background: var(--background);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #606266;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .secret-input {
+            width: 100%;
+            height: 40px;
+            padding: 8px 15px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .secret-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .data-textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            resize: vertical;
+            font-size: 14px;
+        }
+
+        .generate-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .generate-btn:hover {
+            background: #66b1ff;
+        }
+
+        .result-box {
+            margin-top: 25px;
+        }
+
+        .result-textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 1px solid #e4e7ed;
+            border-radius: 4px;
+            background: #f5f7fa;
+            font-size: 14px;
+            color: #606266;
+            resize: none;
+        }
+
+        .input-hint {
+            color: #909399;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-group">
+            <label class="form-label">安全秘钥</label>
+            <input 
+                type="text" 
+                class="secret-input" 
+                id="secret" 
+                placeholder="请输入您的安全秘钥"
+            >
+            <div class="input-hint">安全秘钥</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">设备数据</label>
+            <textarea 
+                class="data-textarea" 
+                id="data" 
+                placeholder="门店编号与设备编号用&连接，多对数据请换行输入
+门店1&设备1 
+门店2&设备2"
+            ></textarea>
+            <div class="input-hint"></div>
+        </div>
+
+        <button class="generate-btn">立即生成碰一碰链接</button>
+
+        <div class="form-group result-box">
+            <label class="form-label">生成结果</label>
+            <textarea 
+                class="result-textarea" 
+                id="allurl" 
+                disabled
+                placeholder="生成的链接将显示在这里"
+            ></textarea>
+        </div>
+    </div>
+</body>
+</html>
